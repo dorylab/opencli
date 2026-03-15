@@ -5,19 +5,54 @@
 
 [English](./README.md)
 
-[![npm](https://img.shields.io/npm/v/@jackwener/opencli)](https://www.npmjs.com/package/@jackwener/opencli)
+[![npm](https://img.shields.io/npm/v/@jackwener/opencli?style=flat-square)](https://www.npmjs.com/package/@jackwener/opencli)
+[![Node.js Version](https://img.shields.io/node/v/@jackwener/opencli?style=flat-square)](https://nodejs.org)
+[![License](https://img.shields.io/npm/l/@jackwener/opencli?style=flat-square)](./LICENSE)
 
 OpenCLI 通过 Chrome 浏览器 + [Playwright MCP Bridge](https://github.com/nichochar/playwright-mcp) 扩展，将任何网站变成命令行工具。不存密码、不泄 token，直接复用浏览器已登录状态。
+
+---
+
+## 目录
+
+- [亮点](#亮点)
+- [前置要求](#前置要求)
+- [快速开始](#快速开始)
+- [内置命令](#内置命令)
+- [输出格式](#输出格式)
+- [致 AI Agent（开发者指南）](#致-ai-agent开发者指南)
+- [常见问题排查](#常见问题排查)
+- [版本发布](#版本发布)
+- [License](#license)
+
+---
 
 ## 亮点
 
 - **47 个命令，17 个站点** — B站、知乎、小红书、Twitter、Reddit、雪球(xueqiu)、GitHub、V2EX、Hacker News、BBC、微博、BOSS直聘、Yahoo Finance、路透社、什么值得买、携程、YouTube
 - **零风控** — 复用 Chrome 登录态，无需存储任何凭证
 - **AI 原生** — `explore` 自动发现 API，`synthesize` 生成适配器，`cascade` 探测认证策略
-- **动态加载引擎** — 只需将 `.ts` 或 `.yaml` 适配器放入 `clis/` 文件夹即可自动注册生效
-- **双引擎架构设计**:
-  - **YAML 声明式引擎**：大部分适配器只需极简的 ~30 行 YAML 声明
-  - **原生浏览器注入引擎**：提供高级 TS API（`installInterceptor`、`autoScroll`）轻松实现 XHR 劫持、GraphQL 解包及状态库注入
+- **动态加载引擎** — 声明式的 `.yaml` 或者底层定制的 `.ts` 适配器，放入 `clis/` 文件夹即可自动注册生效
+
+## 前置要求
+
+- **Node.js**: >= 18.0.0
+- **Chrome** 浏览器正在运行，且**已登录目标网站**（如 bilibili.com、zhihu.com、xiaohongshu.com）
+- 安装 **[Playwright MCP Bridge](https://chromewebstore.google.com/detail/playwright-mcp-bridge/mmlmfjhmonkocbjadbfplnigmagldckm)** 扩展
+
+这是默认连接方式——安装扩展后无需额外配置。
+
+#### 可选：Chrome 144+ CDP 自动发现
+
+如果使用 Chrome 144+，可以跳过扩展，改用内置远程调试：
+
+1. 在 Chrome 中打开 `chrome://inspect#remote-debugging`
+2. 勾选 **"允许对此浏览器实例进行远程调试"**
+3. 运行时设置 `OPENCLI_USE_CDP=1`
+
+也可通过 `OPENCLI_CDP_ENDPOINT` 环境变量手动指定 CDP endpoint。（注：公共 API 命令如 `hackernews`、`github search` 等无需浏览器即可运行。）
+
+> **⚠️ 重要**：浏览器命令复用你的 Chrome 登录状态。运行命令前，你必须已在 Chrome 中登录目标网站。如果获取到空数据或报错，请先检查登录状态。
 
 ## 快速开始
 
@@ -36,51 +71,28 @@ opencli bilibili hot --limit 5            # 浏览器命令
 opencli zhihu hot -f json                 # JSON 输出
 ```
 
-### 从源码安装
+### 从源码安装（面向开发者）
 
 ```bash
 git clone git@github.com:jackwener/opencli.git
-cd opencli && npm install
-npx tsx src/main.ts list
+cd opencli 
+npm install
+npm run build
+npm link      # 链接到全局环境
+opencli list  # 可以在任何地方使用了！
 ```
 
 ### 更新
 
 ```bash
-# npm 全局更新
-npm update -g @jackwener/opencli
-
-# 或直接安装最新版
 npm install -g @jackwener/opencli@latest
 ```
-
-## 前置要求
-
-浏览器命令需要：
-1. **Chrome** 浏览器正在运行，且**已登录目标网站**（如 bilibili.com、zhihu.com、xiaohongshu.com）
-2. 安装 **[Playwright MCP Bridge](https://chromewebstore.google.com/detail/playwright-mcp-bridge/mmlmfjhmonkocbjadbfplnigmagldckm)** 扩展
-
-这是默认连接方式——安装扩展后无需额外配置。
-
-#### 可选：Chrome 144+ CDP 自动发现
-
-如果使用 Chrome 144+，可以跳过扩展，改用内置远程调试：
-
-1. 在 Chrome 中打开 `chrome://inspect#remote-debugging`
-2. 勾选 **"允许对此浏览器实例进行远程调试"**
-3. 运行时设置 `OPENCLI_USE_CDP=1`
-
-也可通过 `OPENCLI_CDP_ENDPOINT` 环境变量手动指定 CDP endpoint。
-
-公共 API 命令（`hackernews`、`github search`、`v2ex`）无需浏览器。
-
-> **⚠️ 重要**：浏览器命令复用你的 Chrome 登录状态。运行命令前，你必须已在 Chrome 中登录目标网站。如果获取到空数据或报错，请先检查登录状态。
 
 ## 内置命令
 
 | 站点 | 命令 | 模式 |
 |------|------|------|
-| **bilibili** | `hot` `search` `me` `favorite` `history` `feed` `user-videos` `subtitle` `dynamic` `ranking` `following` | 🔐 浏览器 |
+| **bilibili** | `hot` `search` `me` `favorite` ...（共11个） | 🔐 浏览器 |
 | **zhihu** | `hot` `search` `question` | 🔐 浏览器 |
 | **xiaohongshu** | `search` `notifications` `feed` `me` `user` | 🔐 浏览器 |
 | **xueqiu** | `feed` `hot-stock` `hot` `search` `stock` `watchlist` | 🔐 浏览器 |
@@ -100,18 +112,22 @@ npm install -g @jackwener/opencli@latest
 
 ## 输出格式
 
+所有的命令都支持这些结果格式控制参数：
+
 ```bash
-opencli bilibili hot -f table   # 默认：表格
-opencli bilibili hot -f json    # JSON（可 pipe 给 jq 或 AI agent）
+opencli bilibili hot -f table   # 默认：富文本表格
+opencli bilibili hot -f json    # JSON（适合传给 jq 或者各类 AI Agent）
 opencli bilibili hot -f md      # Markdown
 opencli bilibili hot -f csv     # CSV
-opencli bilibili hot -v         # 详细模式：展示 pipeline 每步数据
+opencli bilibili hot -v         # 详细模式：展示管线执行步骤调试信息
 ```
 
-## AI Agent 工作流
+## 致 AI Agent（开发者指南）
 
-> [!IMPORTANT]
-> AI Agent 创建新适配器时，**必须先阅读 [CLI-CREATOR.md](./CLI-CREATOR.md)**，其中包含完整的浏览器探索工作流、认证策略决策树和调试指南。
+如果你是一个被要求查阅代码并编写新 `opencli` 适配器的 AI，请遵守以下工作流。
+
+> **给 AI 的提示：**
+> 在编写任何新代码前，你**必须首先阅读 [CLI-CREATOR.md](./CLI-CREATOR.md)**。它包含了完整的适配器开发指南、API 探测流程、5级认证策略以及常见陷阱。如果你跳过这一步直接写代码，会导致很多不必要的错误。
 
 ```bash
 # 1. Deep Explore — 网络拦截 → 响应分析 → 能力推理 → 框架检测
@@ -127,26 +143,27 @@ opencli generate https://example.com --goal "hot"
 opencli cascade https://api.example.com/data
 ```
 
-探索结果输出到 `.opencli/explore/<site>/`：
-- `manifest.json` — 站点元数据、框架检测结果
-- `endpoints.json` — 评分排序的 API 端点，含响应 schema
-- `capabilities.json` — 推理出的能力及置信度
-- `auth.json` — 认证策略建议
+探索结果输出到 `.opencli/explore/<site>/`。
 
-## 创建新命令
+## 常见问题排查
 
-> [!CAUTION]
-> **必须先阅读 [CLI-CREATOR.md](./CLI-CREATOR.md)！** 它是适配器开发的完全指南，包含 API 发现工作流、5 级认证策略、平台 SDK 参考、YAML/TS 选择决策树、`tap` 调试流程和常见陷阱。**跳过此文档直接写代码会导致大量可避免的错误。**
+- **"Failed to connect to Playwright MCP Bridge"** 报错
+  - 确保你当前的 Chrome 已安装且**开启了** Playwright MCP Bridge 浏览器插件。
+  - 如果是刚装完插件，需要重启 Chrome 浏览器。
+- **"CDP command failed" / "被风控拦截"**
+  - 有些网站（例如 BOSS 直聘）会因为开了 DevTools 或者 CDP 端口拦截验证。OpenCLI 有 cookie 降级机制，通常不需要干预，不用去强行加上 CDP 标识参数即可。
+- **返回空数据，或者报错 "Unauthorized"**
+  - Chrome 里的登录态可能已经过期（甚至被要求过滑动验证码）。请打开当前 Chrome 页面，在新标签页重新手工登录或刷新该页面。
+- **Node API 错误 (如 parseArgs, fs 等)**
+  - 确保 Node.js 版本 `>= 18`。旧版不支持我们使用的现代核心库 API。
 
 ## 版本发布
 
 ```bash
-# 升级版本号
 npm version patch   # 0.1.0 → 0.1.1
 npm version minor   # 0.1.0 → 0.2.0
-npm version major   # 0.1.0 → 1.0.0
 
-# 推送 tag，GitHub Actions 自动发 release 并发布到 npm
+# 推送 tag，GitHub Actions 将自动执行发版和 npm 发布
 git push --follow-tags
 ```
 
