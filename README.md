@@ -21,6 +21,7 @@ A CLI tool that turns **any website** into a command-line interface — Bilibili
 - [Built-in Commands](#built-in-commands)
 - [Output Formats](#output-formats)
 - [For AI Agents (Developer Guide)](#for-ai-agents-developer-guide)
+- [Remote Chrome (Server/Headless)](#remote-chrome-serverheadless)
 - [Testing](#testing)
 - [Troubleshooting](#troubleshooting)
 - [Releasing New Versions](#releasing-new-versions)
@@ -68,6 +69,9 @@ The interactive TUI will:
 > opencli doctor --fix      # Fix mismatched configs (interactive)
 > opencli doctor --fix -y   # Fix all configs non-interactively
 > ```
+
+**Alternative: CDP Mode (For Servers/Headless)**
+If you cannot install the browser extension (e.g. running OpenCLI on a remote headless server), you can connect OpenCLI to your local Chrome via CDP using SSH tunnels or reverse proxies. See the [CDP Connection Guide](./CDP.md) for detailed instructions.
 
 <details>
 <summary>Manual setup (alternative)</summary>

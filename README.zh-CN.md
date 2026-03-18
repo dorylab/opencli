@@ -21,6 +21,7 @@ OpenCLI 将任何网站变成命令行工具 — B站、知乎、小红书、Twi
 - [内置命令](#内置命令)
 - [输出格式](#输出格式)
 - [致 AI Agent（开发者指南）](#致-ai-agent开发者指南)
+- [远程 Chrome（服务器/无头环境）](#远程-chrome服务器无头环境)
 - [常见问题排查](#常见问题排查)
 - [版本发布](#版本发布)
 - [License](#license)
@@ -67,6 +68,9 @@ opencli setup
 > opencli doctor --fix      # 修复不一致的配置（交互确认）
 > opencli doctor --fix -y   # 无交互直接修复所有配置
 > ```
+
+**备选方案：CDP 模式 (适用于服务器/无头环境)**
+如果你无法安装浏览器扩展（比如在远程无头服务器上运行 OpenCLI），你可以通过 SSH 隧道或反向代理，利用 CDP (Chrome DevTools Protocol) 连接到本地的 Chrome 浏览器。详细指南请参考 [CDP 连接教程](./CDP.zh-CN.md)。
 
 <details>
 <summary>手动配置（备选方案）</summary>
